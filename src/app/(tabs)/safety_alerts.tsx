@@ -7,10 +7,8 @@ import {
     Text,
     TouchableOpacity,
     useWindowDimensions,
-    Animated,
 } from 'react-native';
-import { TabView, TabBar, Route } from 'react-native-tab-view';
-
+import { TabView, Route } from 'react-native-tab-view';
 
 interface CustomRoute extends Route {
     title: string;
@@ -27,15 +25,6 @@ const renderScene = ({ route }: { route: CustomRoute }) => {
             return null;
     }
 };
-
-// const tabBarProps = {
-//     navigationState: { index, routes },
-//     position: new Animated.Value(index),
-//     jumpTo: (key: string) => {
-//         const newIndex = routes.findIndex((r) => r.key === key);
-//         if (newIndex !== -1) setIndex(newIndex);
-//     },
-// };
 
 export default function SafetyAlertsScreen() {
     const layout = useWindowDimensions();
@@ -58,16 +47,6 @@ export default function SafetyAlertsScreen() {
         setCityFilter('San Diego');
     };
 
-    // Shared TabBar props setup to pass out-of-context manually
-    const tabBarProps = {
-        navigationState: { index, routes },
-        position: new Animated.Value(index) as any, // Mock position animation for independent usage
-        jumpTo: (key: string) => {
-            const newIndex = routes.findIndex((r) => r.key === key);
-            if (newIndex !== -1) setIndex(newIndex);
-        },
-    };
-
     return (
         <View style={styles.container}>
             {/* --- 1. HEADER --- */}
@@ -83,31 +62,34 @@ export default function SafetyAlertsScreen() {
                 </Text>
             </View>
 
-            {/* --- 2. EXTRACTED TAB BAR (Now on Top) --- */}
+            {/* --- 2. CLEAN PURE FLEXBOX PILL TABS --- */}
             <View style={styles.tabBarWrapper}>
-                <TabBar<CustomRoute>
-                    style={styles.tabBarBackground}
-                    indicatorStyle={styles.tabIndicator}
-                    activeColor="#00664F"
-                    inactiveColor="#4A5568"
-                    renderLabel={({ route, color, focused }) => (
-                        <View style={[
-                            styles.tabPill,
-                            focused && styles.activeTabPill]}>
+                {routes.map((route, i) => {
+                    const isFocused = index === i;
+                    
+                    return (
+                        <TouchableOpacity
+                            key={route.key}
+                            style={[
+                                styles.tabPill, 
+                                isFocused ? styles.activeTabPill : styles.inactiveTabPill
+                            ]}
+                            onPress={() => setIndex(i)}
+                            activeOpacity={0.7}
+                        >
                             <Text style={[
-                                styles.tabLabel, 
-                                { color }, 
-                                focused && styles.activeTabLabel]}>
+                                styles.tabLabel,
+                                { color: isFocused ? '#00664F' : '#4A5568' }
+                            ]}>
                                 {route.key === 'recalls' ? '📦 ' : '📈 '}
                                 {route.title}
                             </Text>
-                        </View>
-                    )}
-                    {...tabBarProps}
-                />
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
 
-            {/* --- 3. FILTER PANEL CONTROLS (Underneath Tabs) --- */}
+            {/* --- 3. FILTER PANEL CONTROLS --- */}
             <View style={styles.filterSection}>
                 <View style={styles.categoryRow}>
                     <TouchableOpacity style={styles.dropdownChip}>
@@ -137,14 +119,14 @@ export default function SafetyAlertsScreen() {
                 </View>
             </View>
 
-            {/* --- 4. VIEWPORTS / OPEN SPACE CONTENT (Under all layout elements) --- */}
+            {/* --- 4. VIEWPORTS / TAB VIEW --- */}
             <View style={styles.contentBody}>
                 <TabView
                     navigationState={{ index, routes }}
                     renderScene={renderScene}
                     onIndexChange={setIndex}
                     initialLayout={{ width: layout.width }}
-                    renderTabBar={() => null} // Disables the inner auto-attached tab headers
+                    renderTabBar={() => null} // Kept null so it uses our perfect custom bar above
                 />
             </View>
         </View>
@@ -189,74 +171,61 @@ const styles = StyleSheet.create({
         color: '#718096',
         marginTop: 4,
     },
+    
+    // --- UPDATED LAYOUT FIXES ---
     tabBarWrapper: {
-        paddingHorizontal: 20,
+        flexDirection: 'row',
+        width: '90%',
+        alignSelf: 'center',
         marginVertical: 10,
-    },
-    tabBarBackground: {
-        backgroundColor: '#F1F5F9',
+        height: 48,
         borderRadius: 8,
-        elevation: 0,
-        shadowOpacity: 0,
-    },
-    tabIndicator: {
-        backgroundColor: '#FFFFFF',
-        height: '84%',
-        top: '8%',
-        borderRadius: 6,
-        width: '46%',
-        left: '2%',
+        padding: 4,
+        gap: 4,
+        backgroundColor: '#F1F5F9',
     },
     tabPill: {
-        flex: 1,
-        justifyContent: 'center',
+        flex: 1, // Splitting the space exactly 50/50 after accounting for gap/padding
         alignItems: 'center',
-        width: '100%',
-        paddingVertical: 8,
+        justifyContent: 'center',
+        borderRadius: 6,
     },
     activeTabPill: {
-        // Active container properties if needed
+        backgroundColor: '#3116deb3', // Your primary colored background when focused
+    },
+    inactiveTabPill: {
+        backgroundColor: 'transparent', // Clear background when unfocused
     },
     tabLabel: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
     },
-    activeTabLabel: {
-        fontWeight: '700',
-    },
+    
+    // --- STUBS FOR REST OF SCREEN LAYOUT ---
     filterSection: {
         paddingHorizontal: 20,
-        marginBottom: 15,
+        marginVertical: 10,
     },
     categoryRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginVertical: 12,
+        marginBottom: 10,
     },
     dropdownChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#E6FFFA',
+        backgroundColor: '#F1F5F9',
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 20,
-        borderWidth: 1,
-        borderColor: '#B2F5EA',
     },
     chipText: {
-        color: '#00664F',
-        fontWeight: '600',
-        fontSize: 14,
+        color: '#1A202C',
     },
     resetText: {
-        color: '#00664F',
-        fontWeight: '600',
-        fontSize: 14,
+        color: '#718096',
     },
     locationRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         gap: 12,
     },
     inputGroup: {
@@ -265,8 +234,7 @@ const styles = StyleSheet.create({
     inputLabel: {
         fontSize: 12,
         color: '#718096',
-        fontWeight: '500',
-        marginBottom: 6,
+        marginBottom: 4,
     },
     locationSelector: {
         flexDirection: 'row',
@@ -274,21 +242,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#E2E8F0',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        backgroundColor: '#FAFAFA',
+        borderRadius: 6,
+        padding: 10,
     },
     selectorText: {
         fontSize: 14,
         color: '#1A202C',
-        fontWeight: '500',
     },
     chevron: {
-        fontSize: 12,
         color: '#A0AEC0',
     },
     contentBody: {
-        flex: 1, // Forces the actual lists to take up all remaining space below filters
+        flex: 1,
     },
 });

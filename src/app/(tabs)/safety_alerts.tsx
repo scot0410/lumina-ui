@@ -9,7 +9,7 @@ import {
     useWindowDimensions,
 } from 'react-native';
 import { TabView, Route } from 'react-native-tab-view';
-import { Activity, Package } from 'lucide-react-native';
+import { Activity, ChevronDown, Package, SlidersHorizontal, Map, MapPin, Bell } from 'lucide-react-native';
 
 interface CustomRoute extends Route {
     title: string;
@@ -55,7 +55,7 @@ export default function SafetyAlertsScreen() {
                 <View style={styles.headerTitleRow}>
                     <Text style={styles.headerTitle}>Safety alerts</Text>
                     <TouchableOpacity style={styles.notificationButton}>
-                        <Text style={styles.bellIcon}>🔔</Text>
+                        <Bell size={20} color={"#087F79"} strokeWidth={2} />
                     </TouchableOpacity>
                 </View>
                 <Text style={styles.headerSubtitle}>
@@ -68,13 +68,16 @@ export default function SafetyAlertsScreen() {
                 {routes.map((route, i) => {
                     const isFocused = index === i;
                     const currentTabColor = isFocused ? '#087F79' : '#607278';
+                    const currentFontWeight = isFocused ? '600' : '400';
 
                     return (
                         <TouchableOpacity
                             key={route.key}
                             style={[
                                 styles.tabPill,
-                                isFocused ? styles.activeTabPill : styles.inactiveTabPill
+                                isFocused
+                                    ? styles.activeTabPill
+                                    : styles.inactiveTabPill
                             ]}
                             onPress={() => setIndex(i)}
                             activeOpacity={0.7}
@@ -95,19 +98,24 @@ export default function SafetyAlertsScreen() {
                             )}
 
                             {/* 2. Text sits cleanly out here as its own pure string component */}
-                            <Text style={[styles.tabLabel, { color: currentTabColor }]}>
+                            <Text style={[styles.tabLabel,
+                            {
+                                color: currentTabColor,
+                                fontWeight: currentFontWeight,
+                            }]}>
                                 {route.title}
                             </Text>
                         </TouchableOpacity>
                     );
                 })}
             </View>
-
             {/* --- 3. FILTER PANEL CONTROLS --- */}
             <View style={styles.filterSection}>
                 <View style={styles.categoryRow}>
                     <TouchableOpacity style={styles.dropdownChip}>
-                        <Text style={styles.chipText}>🎛️ {category} ∨</Text>
+                        <SlidersHorizontal size={15} color={"#087F79"} />
+                        <Text style={styles.chipText}>{category}</Text>
+                        <ChevronDown size={15} color={"#087F79"} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleReset}>
                         <Text style={styles.resetText}>Reset</Text>
@@ -118,16 +126,18 @@ export default function SafetyAlertsScreen() {
                     <View style={styles.inputGroup}>
                         <Text style={styles.inputLabel}>State</Text>
                         <TouchableOpacity style={styles.locationSelector}>
-                            <Text style={styles.selectorText}>🗺️ {stateFilter}</Text>
-                            <Text style={styles.chevron}>∨</Text>
+                            <Map size={15} color={"#607278"} />
+                            <Text style={styles.selectorText}>{stateFilter}</Text>
+                            <ChevronDown size={15} color={"#607278"} />
                         </TouchableOpacity>
                     </View>
 
                     <View style={styles.inputGroup}>
                         <Text style={styles.inputLabel}>City / local area</Text>
                         <TouchableOpacity style={styles.locationSelector}>
-                            <Text style={styles.selectorText}>📍 {cityFilter}</Text>
-                            <Text style={styles.chevron}>∨</Text>
+                            <MapPin size={15} color={"#607278"} />
+                            <Text style={styles.selectorText}>{cityFilter}</Text>
+                            <ChevronDown size={15} color={"#607278"} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -165,26 +175,27 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 28,
         fontWeight: '700',
-        color: '#1A202C',
+        color: '#182C32',
         fontFamily: 'Inter-Medium', // Enforced globally
     },
     notificationButton: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#EDFDF5',
+        backgroundColor: '#E8F4F2',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#D1FAE5',
+        borderColor: '#E8F4F2',
     },
     bellIcon: {
         fontSize: 18,
     },
     headerSubtitle: {
         fontSize: 15,
-        color: '#718096',
+        color: '#607278',
         marginTop: 4,
+        fontWeight: '300'
     },
 
     // --- UPDATED LAYOUT FIXES ---
@@ -204,7 +215,7 @@ const styles = StyleSheet.create({
         flex: 1, // Splitting the space exactly 50/50 after accounting for gap/padding
         flexDirection: 'row',
         justifyContent: 'center',
-        borderRadius: 6,
+        borderRadius: 8,
         alignItems: 'center',
         paddingVertical: 10,
         paddingHorizontal: 4,
@@ -217,6 +228,7 @@ const styles = StyleSheet.create({
         lineHeight: 20,            // Enforced globally
     },
     activeTabPill: {
+
         backgroundColor: '#FFF', // Your primary colored background when focused
         color: '#087F79'
     },
@@ -237,16 +249,25 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     dropdownChip: {
-        backgroundColor: '#F1F5F9',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: '#E8F4F2',
         paddingVertical: 6,
         paddingHorizontal: 12,
-        borderRadius: 20,
+        borderRadius: 99,
+        color: '#087F79',
+        height: 36
     },
     chipText: {
-        color: '#1A202C',
+        color: '#087F79',
+        fontWeight: '600',
+
     },
     resetText: {
-        color: '#718096',
+        color: '#087F79',
+        fontWeight: '600',
+
     },
     locationRow: {
         flexDirection: 'row',
@@ -257,12 +278,15 @@ const styles = StyleSheet.create({
     },
     inputLabel: {
         fontSize: 12,
-        color: '#718096',
+        color: '#607278',
         marginBottom: 4,
+        // flexDirection: 'row',
+        // alignContent: 'flex-start'
+        fontWeight: '400'
     },
     locationSelector: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        // justifyContent: 'space-between',
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#E2E8F0',
@@ -271,7 +295,14 @@ const styles = StyleSheet.create({
     },
     selectorText: {
         fontSize: 14,
-        color: '#1A202C',
+        color: '#182C32',
+
+        fontWeight: '500',
+
+        // --- PRECISE SPACING HOOKS ---
+        marginLeft: 8,  // 1. Map icon is exactly 4px away from text
+        marginRight: 16, // 2. Creates explicit space to the right of the state text
+        flexGrow: 1,
     },
     chevron: {
         color: '#A0AEC0',

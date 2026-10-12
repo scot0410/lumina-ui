@@ -1,6 +1,6 @@
 import OutBreaksScreen from '@/components/outbreaks';
-import RecallScreen from '@/components/recalls';
-import React, { useState } from 'react';
+import { AlertItem } from '@/components/safety_alert_card';
+import React, { useMemo, useState } from 'react';
 import {
     StyleSheet,
     View,
@@ -8,39 +8,73 @@ import {
     TouchableOpacity,
     useWindowDimensions,
 } from 'react-native';
-import { TabView, Route } from 'react-native-tab-view';
+import { TabView, Route, SceneMap } from 'react-native-tab-view';
 import { Activity, ChevronDown, Package, SlidersHorizontal, Map, MapPin, Bell } from 'lucide-react-native';
+import { AlertListContainer } from '@/components/alert_list_container';
+
+const MOCK_RECALLS: AlertItem[] = [
+    {
+        id: 'rec-1',
+        category: 'Food · Produce',
+        date: 'Sep 18, 2026',
+        title: 'Valley Leaf baby spinach',
+        threat: 'Possible Listeria contamination',
+        location: 'California · San Diego stores',
+        productDetails: '5 oz bags of baby spinach',
+        lotCode: 'VL0912–VL0914',
+        useBy: 'Sep 20–22, 2026',
+        instructions: 'Do not eat the affected product. Return it for a refund or discard it. Clean surfaces it touched.',
+        source: 'FDA · example notice'
+    }
+];
+
+const MOCK_OUTBREAKS: AlertItem[] = [
+    {
+        id: 'out-1',
+        category: 'Water · Local',
+        date: 'Sep 10, 2026',
+        title: 'San Diego County Tap Network',
+        threat: 'Boil water advisory active',
+        location: 'California · San Diego stores',
+        productDetails: 'Municipal utility lines',
+        lotCode: 'N/A',
+        useBy: 'Until cleared',
+        instructions: 'Bring all water to a rolling boil for at least 1 minute before drinking or cooking.',
+        source: 'San Diego Health Dept'
+    }
+];
 
 interface CustomRoute extends Route {
     title: string;
     icon?: string;
 }
 
-const renderScene = ({ route }: { route: CustomRoute }) => {
-    switch (route.key) {
-        case 'recalls':
-            return <RecallScreen />;
-        case 'outbreaks':
-            return <OutBreaksScreen />;
-        default:
-            return null;
-    }
-};
+// const renderScene = ({ route }: { route: CustomRoute }) => {
+//     switch (route.key) {
+//         case 'recalls':
+//             return <RecallScreen />;
+//         case 'outbreaks':
+//             return <OutBreaksScreen />;
+//         default:
+//             return null;
+//     }
+// };
 
 export default function SafetyAlertsScreen() {
     const layout = useWindowDimensions();
-
-    // Tab State
     const [index, setIndex] = useState(0);
     const [routes] = useState<CustomRoute[]>([
         { key: 'recalls', title: 'Recalls' },
         { key: 'outbreaks', title: 'Outbreaks' },
     ]);
-
-    // Filter States
     const [category, setCategory] = useState('All categories');
     const [stateFilter, setStateFilter] = useState('California');
     const [cityFilter, setCityFilter] = useState('San Diego');
+
+    const renderScene = useMemo(() => SceneMap({
+        recalls: () => <AlertListContainer data={MOCK_RECALLS} />,
+        outbreaks: () => <AlertListContainer data={MOCK_OUTBREAKS} />,
+    }), []);
 
     const handleReset = () => {
         setCategory('All categories');
@@ -150,7 +184,7 @@ export default function SafetyAlertsScreen() {
                     renderScene={renderScene}
                     onIndexChange={setIndex}
                     initialLayout={{ width: layout.width }}
-                    renderTabBar={() => null} // Kept null so it uses our perfect custom bar above
+                    renderTabBar={() => null} 
                 />
             </View>
         </View>

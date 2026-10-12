@@ -9,6 +9,7 @@ import {
     useWindowDimensions,
 } from 'react-native';
 import { TabView, Route } from 'react-native-tab-view';
+import { Activity, Package } from 'lucide-react-native';
 
 interface CustomRoute extends Route {
     title: string;
@@ -66,22 +67,35 @@ export default function SafetyAlertsScreen() {
             <View style={styles.tabBarWrapper}>
                 {routes.map((route, i) => {
                     const isFocused = index === i;
-                    
+                    const currentTabColor = isFocused ? '#087F79' : '#607278';
+
                     return (
                         <TouchableOpacity
                             key={route.key}
                             style={[
-                                styles.tabPill, 
+                                styles.tabPill,
                                 isFocused ? styles.activeTabPill : styles.inactiveTabPill
                             ]}
                             onPress={() => setIndex(i)}
                             activeOpacity={0.7}
                         >
-                            <Text style={[
-                                styles.tabLabel,
-                                { color: isFocused ? '#00664F' : '#4A5568' }
-                            ]}>
-                                {route.key === 'recalls' ? '📦 ' : '📈 '}
+                            {/* 1. Icon sits out here as a true flex sibling */}
+                            {route.key === 'recalls' ? (
+                                <Package
+                                    size={16}
+                                    color={currentTabColor}
+                                    strokeWidth={2}
+                                />
+                            ) : (
+                                <Activity
+                                    size={16}
+                                    color={currentTabColor}
+                                    strokeWidth={2}
+                                />
+                            )}
+
+                            {/* 2. Text sits cleanly out here as its own pure string component */}
+                            <Text style={[styles.tabLabel, { color: currentTabColor }]}>
                                 {route.title}
                             </Text>
                         </TouchableOpacity>
@@ -152,6 +166,7 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: '700',
         color: '#1A202C',
+        fontFamily: 'Inter-Medium', // Enforced globally
     },
     notificationButton: {
         width: 40,
@@ -171,7 +186,7 @@ const styles = StyleSheet.create({
         color: '#718096',
         marginTop: 4,
     },
-    
+
     // --- UPDATED LAYOUT FIXES ---
     tabBarWrapper: {
         flexDirection: 'row',
@@ -182,25 +197,34 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 4,
         gap: 4,
-        backgroundColor: '#F1F5F9',
+        // backgroundColor: '#F1F5F9',
+        backgroundColor: '#EDF1F2',
     },
     tabPill: {
         flex: 1, // Splitting the space exactly 50/50 after accounting for gap/padding
-        alignItems: 'center',
+        flexDirection: 'row',
         justifyContent: 'center',
         borderRadius: 6,
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 4,
+        gap: 4,
+    },
+    tabLabel: {
+        fontWeight: '600',
+        // fontFamily: 'Inter-Medium', // Enforced globally
+        fontSize: 15,              // Enforced globally
+        lineHeight: 20,            // Enforced globally
     },
     activeTabPill: {
-        backgroundColor: '#3116deb3', // Your primary colored background when focused
+        backgroundColor: '#FFF', // Your primary colored background when focused
+        color: '#087F79'
     },
     inactiveTabPill: {
         backgroundColor: 'transparent', // Clear background when unfocused
+        color: '#607278'
     },
-    tabLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    
+
     // --- STUBS FOR REST OF SCREEN LAYOUT ---
     filterSection: {
         paddingHorizontal: 20,

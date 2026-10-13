@@ -207,10 +207,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerTitle: {
-        fontSize: 28,
+        fontSize: 27,
         fontWeight: '700',
         color: '#182C32',
-        fontFamily: 'Inter-Medium', // Enforced globally
+        fontFamily: 'Inter-Bold', // Enforced globally
     },
     notificationButton: {
         width: 40,

@@ -177,15 +177,16 @@ const styles = StyleSheet.create({
         paddingBottom: 16,
     },
     headerTitle: {
-        fontSize: 32,
-        fontWeight: '800',
-        color: '#1A2530',
-        marginBottom: 6,
+    fontSize: 27,
+        fontWeight: '700',
+        color: '#182C32',
+        fontFamily: 'Inter-Bold',
     },
     headerSubtitle: {
         fontSize: 15,
-        color: '#677482',
-        fontWeight: '400',
+        color: '#607278',
+        marginTop: 4,
+        fontWeight: '300'
     },
     // Viewfinder Bounds
     viewfinderContainer: {

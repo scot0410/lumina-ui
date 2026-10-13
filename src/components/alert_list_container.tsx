@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, FlatList, View } from 'react-native';
-import { SafetyAlertCard, AlertItem } from './safety_alert_card';
-// import {SafetyAlertCard} from "./safety_alert_card"
+import { SafetyAlertCard } from './safety_alert_card';
+import { AlertItem } from '@/types';
 
 interface ListProps {
   data: AlertItem[];

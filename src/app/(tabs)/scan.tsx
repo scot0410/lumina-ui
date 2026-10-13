@@ -1,10 +1,10 @@
-import CameraScreen from '@/components/camera';
+import ScanProductScreen from '@/components/scan_product';
 import { Text, View, StyleSheet } from 'react-native';
 
-export default function AboutScreen() {
+export default function ScanScreen() {
   return (
     <View style={styles.container}>
-      <CameraScreen/>
+      <ScanProductScreen/>
     </View>
   );
 }

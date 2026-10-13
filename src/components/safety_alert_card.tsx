@@ -8,24 +8,7 @@ import {
   ChevronUp, 
   ChevronDown 
 } from 'lucide-react-native';
-
-export interface AlertItem {
-  id: string;
-  category: string;
-  date: string;
-  title: string;
-  threat: string;
-  location: string;
-  productDetails: string;
-  lotCode: string;
-  useBy: string;
-  instructions: string;
-  source: string;
-}
-
-interface CardProps {
-  item: AlertItem;
-}
+import { CardProps } from '../types';
 
 export function SafetyAlertCard({ item }: CardProps) {
   const [isExpanded, setIsExpanded] = useState(true);

@@ -137,26 +137,6 @@ export default function ScanProductScreen() {
                     <Text style={styles.actionLabel}>Flip camera</Text>
                 </TouchableOpacity>
             </View>
-
-            {/* 5. APP NAVIGATION TAB
-            <View style={styles.bottomNav}>
-                <TouchableOpacity style={styles.navItem}>
-                    <View style={styles.activeNavIndicator}>
-                        <Scan color="#005F59" size={20} />
-                    </View>
-                    <Text style={[styles.navLabel, styles.activeNavLabel]}>Scan</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.navItem}>
-                    <ShieldCheck color="#7C8B9A" size={20} style={styles.inactiveNavIcon} />
-                    <Text style={styles.navLabel}>Alerts</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.navItem}>
-                    <Bookmark color="#7C8B9A" size={20} style={styles.inactiveNavIcon} />
-                    <Text style={styles.navLabel}>Saved</Text>
-                </TouchableOpacity> */}
-            {/* </View> */}
         </View>
     );
 }
@@ -217,7 +197,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
     },
     cameraOverlayContainer: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         justifyContent: 'space-between',
         padding: 16,
     },

@@ -15,3 +15,9 @@ export interface AlertItem {
 export interface CardProps {
   item: AlertItem;
 }
+
+
+export interface ProcessingModalProps {
+  visible: boolean;
+  onCancel: () => void;
+}

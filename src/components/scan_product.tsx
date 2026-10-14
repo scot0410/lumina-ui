@@ -1,8 +1,9 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Flashlight, Image, RotateCw, Scan, Search } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Animated,
     Dimensions,
     StatusBar,
@@ -11,6 +12,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { ProcessingModal } from './scan_processing';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +20,10 @@ export default function ScanProductScreen() {
     const [permission, requestPermission] = useCameraPermissions();
     const [facing, setFacing] = useState<'back' | 'front'>('back');
     const [enableTorch, setEnableTorch] = useState<boolean>(false);
+    const [photoUri, setPhotoUri] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const cameraRef = useRef<any>(null);
 
     // 🛠️ TOAST CONTROLLER STATE
     const [showInstructions, setShowInstructions] = useState(true);
@@ -69,6 +75,28 @@ export default function ScanProductScreen() {
         setEnableTorch(current => !current);
     }
 
+    const handleTakePhoto = async () => {
+        if (cameraRef.current) {
+            try {
+                setIsProcessing(true)
+                const options = { quality: 0.8, skipProcessing: false, shutterSound: false };
+                const photo = await cameraRef.current.takePictureAsync(options);
+                setPhotoUri(photo.uri);
+
+                // setIsProcessing(false)
+            } catch (error: any) {
+                setIsProcessing(false)
+            }
+        } else {
+            setIsProcessing(false)
+        }
+    };
+
+    const handleCancel = () => {
+        setIsProcessing(false);
+        // Add logic here to abort the backend fetch request if needed
+    };
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
@@ -85,6 +113,8 @@ export default function ScanProductScreen() {
                     style={StyleSheet.absoluteFill}
                     facing={facing}
                     enableTorch={enableTorch}
+                    ref={cameraRef}
+                    animateShutter={false}
                 />
 
                 {/* CONTROLS OVERLAY - Positioned absolute over the CameraView stream */}
@@ -148,7 +178,7 @@ export default function ScanProductScreen() {
                     <Text style={styles.actionLabel}>Upload photo</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.shutterButtonOuter} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.shutterButtonOuter} activeOpacity={0.8} onPress={handleTakePhoto}>
                     <View style={styles.shutterButtonInner}>
                         <Scan color="#FFFFFF" size={28} />
                     </View>
@@ -162,6 +192,10 @@ export default function ScanProductScreen() {
                     <Text style={styles.actionLabel}>Flip camera</Text>
                 </TouchableOpacity>
             </View>
+            <ProcessingModal
+                visible={isProcessing}
+                onCancel={handleCancel}
+            />
         </View>
     );
 }

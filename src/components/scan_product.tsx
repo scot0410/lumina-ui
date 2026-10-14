@@ -13,8 +13,43 @@ import {
     View
 } from 'react-native';
 import { ProcessingModal } from './scan_processing';
-
+import { ProductResult } from '@/types';
+import ProductCheckScreen from './product_check';
 const { width } = Dimensions.get('window');
+
+const mockDataSuite: Record<string, ProductResult> = {
+    suitable: {
+        status: 'suitable',
+        productName: 'Plain yogurt',
+        matchConfidence: 'Possible match · confirm the label',
+        guidanceTitle: 'Generally suitable',
+        guidanceSubtitle: 'If made with pasteurized milk and stored properly.',
+        guidanceBody: 'Pasteurization reduces harmful bacteria. Plain yogurt can provide calcium and protein.',
+        checklistItems: [
+            'Confirm "pasteurized" on the label.',
+            'Keep refrigerated at 40°F / 4°C or below.',
+            'Check the use-by date and intact seal.'
+        ] as any, // type assertion for string arrays
+        recallStatus: 'No matching recall in sample records',
+        recallDetails: 'Not a recall clearance. Verify the brand, lot and use-by date against current FDA notices.',
+        guidanceSource: 'Guidance: CDC / FDA · dairy & pregnancy'
+    },
+    avoid: {
+        status: 'avoid',
+        productName: 'Unpasteurized milk',
+        matchConfidence: 'Possible match · confirm the label',
+        guidanceTitle: 'Avoid in pregnancy',
+        guidanceSubtitle: 'If the label confirms raw or unpasteurized milk, don\'t drink it.',
+        guidanceBody: 'Raw milk can carry Listeria and germs. These infections can cause serious harm during pregnancy.\n\nPasteurization unclear? Choose a clearly labeled pasteurized option instead.',
+        alternatives: [
+            { icon: 'water-outline', title: 'Pasteurized milk', description: 'A direct swap for drinking or cooking.' },
+            { icon: 'ice-cream-outline', title: 'Pasteurized plain yogurt', description: 'An option for a calcium-rich snack.' }
+        ] as any,
+        recallStatus: 'No matching recall in sample records',
+        recallDetails: 'Not a recall clearance. Verify the brand, lot and use-by date against current FDA notices.',
+        guidanceSource: 'Guidance: CDC / FDA · raw milk & pregnancy'
+    }
+};
 
 export default function ScanProductScreen() {
     const [permission, requestPermission] = useCameraPermissions();
@@ -22,6 +57,9 @@ export default function ScanProductScreen() {
     const [enableTorch, setEnableTorch] = useState<boolean>(false);
     const [photoUri, setPhotoUri] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [backendResult, setBackendResult] = useState<ProductResult | null>(null);
+    const [currentScreen, setCurrentScreen] = useState<'camera' | 'results'>('camera');
+
 
     const cameraRef = useRef<any>(null);
 
@@ -82,8 +120,19 @@ export default function ScanProductScreen() {
                 const options = { quality: 0.8, skipProcessing: false, shutterSound: false };
                 const photo = await cameraRef.current.takePictureAsync(options);
                 setPhotoUri(photo.uri);
+                console.log("Captured cached file location:", photo.uri);
 
-                // setIsProcessing(false)
+                // 2. MOCK BACKEND RETRIEVAL TRANSITION
+                // This simulates a 5-second network round-trip delay to your Python server
+                setTimeout(() => {
+                    // Alternates results between 'suitable' and 'avoid' for dynamic screen testing
+                    const outcomeSeed = 'avoid'//Math.random() > 0.5 ? 'suitable' : 'avoid';
+                    const payload = mockDataSuite[outcomeSeed];
+
+                    setBackendResult(payload);  // Assign JSON payload to state
+                    setIsProcessing(false);      // 3. Clear modal out of view hierarchy
+                    setCurrentScreen('results'); // 4. AUTOMATIC ROUTE ROUTING TRANSITION
+                }, 5000);
             } catch (error: any) {
                 setIsProcessing(false)
             }
@@ -96,6 +145,25 @@ export default function ScanProductScreen() {
         setIsProcessing(false);
         // Add logic here to abort the backend fetch request if needed
     };
+
+    const handleCancelPipeline = () => {
+        setIsProcessing(false);
+        // In production, instantiate an AbortController to disconnect your active fetch stream
+    };
+
+    const handleResetWorkflow = () => {
+        setBackendResult(null);
+        setCurrentScreen('camera'); // Returns cleanly to viewfinder view state
+    };
+
+    if (currentScreen === 'results' && backendResult) {
+        return (
+            <ProductCheckScreen
+                resultData={backendResult}
+                onBackToCamera={handleResetWorkflow}
+            />
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -238,7 +306,7 @@ const styles = StyleSheet.create({
         fontSize: 27,
         fontWeight: '700',
         color: '#182C32',
-        fontFamily: 'Inter-Bold',
+        fontFamily: 'Inter-Bold', // Ensure your custom font asset is bundled
     },
     headerSubtitle: {
         fontSize: 15,
@@ -263,17 +331,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         alignItems: 'flex-start',
-        // marginTop: 4,
-        // borderColor: '#FFF',
-        // borderWidth: 1
     },
     cameraBottomRow: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        // marginBottom: 2,
-        // borderColor: '#FFF',
-        // borderWidth: 1
     },
     instructionBanner: {
         backgroundColor: 'rgba(26, 37, 48, 0.85)',
@@ -390,6 +452,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 32,
         paddingVertical: 16,
+        zIndex: 10, // 👈 CRITICAL: Brings the button taps over absolute camera layouts
     },
     actionButton: {
         alignItems: 'center',
@@ -462,5 +525,304 @@ const styles = StyleSheet.create({
     activeNavLabel: {
         color: '#005F59',
         fontWeight: '700',
+    },
+
+    /* =========================================================================
+       🆕 ADDITIONS FOR PRODUCT CHECK RESULTS DISPLAY (Figma Adaptation)
+       ========================================================================= */
+    scrollContent: {
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        paddingBottom: 130, // Allows clean scroll past the absolute bottom action bar
+    },
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    backButtonText: {
+        fontSize: 14,
+        color: '#005F59',
+        fontWeight: '600',
+        marginLeft: 6,
+    },
+    screenTitle: {
+        fontSize: 27,
+        fontWeight: '700',
+        color: '#182C32',
+        marginBottom: 16,
+    },
+    demoBanner: {
+        flexDirection: 'row',
+        backgroundColor: '#F4F6F8',
+        borderRadius: 14,
+        padding: 14,
+        alignItems: 'flex-start',
+        marginBottom: 24,
+    },
+    demoIcon: {
+        marginTop: 2,
+        marginRight: 10,
+    },
+    demoTextContainer: {
+        flex: 1,
+    },
+    demoTitle: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#182C32',
+    },
+    demoSubtitle: {
+        fontSize: 12,
+        color: '#677482',
+        marginTop: 2,
+    },
+    productRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    imagePlaceholder: {
+        width: 64,
+        height: 64,
+        borderRadius: 14,
+        backgroundColor: '#F4F6F8',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    productTextDetails: {
+        flex: 1,
+    },
+    photoTag: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#677482',
+        letterSpacing: 0.5,
+    },
+    productName: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#182C32',
+        marginTop: 2,
+    },
+    matchText: {
+        fontSize: 13,
+        color: '#677482',
+        marginTop: 2,
+    },
+    guidanceCard: {
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 16,
+    },
+    guidanceHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    guidanceIcon: {
+        marginRight: 8,
+    },
+    guidanceTag: {
+        fontSize: 12,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+    guidanceTitleText: {
+        fontSize: 22,
+        fontWeight: '700',
+        color: '#182C32',
+        lineHeight: 28,
+        marginBottom: 12,
+    },
+    guidanceBodyText: {
+        fontSize: 14,
+        color: '#2A3C3A',
+        lineHeight: 22,
+    },
+    checklistContainer: {
+        marginTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0, 95, 89, 0.1)',
+        paddingTop: 16,
+    },
+    checklistHeader: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#182C32',
+        marginBottom: 10,
+    },
+    checkRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 6,
+    },
+    checkMarkIcon: {
+        marginRight: 8,
+    },
+    checkText: {
+        fontSize: 14,
+        color: '#2A3C3A',
+    },
+    alternativesCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#ECF0F3',
+    },
+    alternativeHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    alternativeTitleMain: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#182C32',
+        marginLeft: 8,
+    },
+    altItemRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+    altIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: '#E8F5F3',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 14,
+    },
+    altTextContainer: {
+        flex: 1,
+    },
+    altItemTitle: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#182C32',
+    },
+    altItemDescription: {
+        fontSize: 13,
+        color: '#677482',
+        marginTop: 2,
+    },
+    altFooterNotice: {
+        fontSize: 13,
+        color: '#677482',
+        lineHeight: 18,
+        marginTop: 14,
+        paddingTop: 14,
+        borderTopWidth: 1,
+        borderTopColor: '#F4F6F8',
+    },
+    recallCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#ECF0F3',
+    },
+    recallHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    recallIcon: {
+        marginRight: 8,
+    },
+    recallTitle: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#182C32',
+    },
+    recallDemoTag: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: '#677482',
+        backgroundColor: '#F4F6F8',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        marginLeft: 8,
+        letterSpacing: 0.5,
+    },
+    recallStatusText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#182C32',
+        marginBottom: 6,
+    },
+    recallDescriptionText: {
+        fontSize: 13,
+        color: '#677482',
+        lineHeight: 18,
+        marginBottom: 14,
+    },
+    externalLinkRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    linkText: {
+        fontSize: 14,
+        color: '#005F59',
+        fontWeight: '700',
+    },
+    linkIcon: {
+        marginLeft: 6,
+    },
+    metaFooterContainer: {
+        marginTop: 8,
+        paddingHorizontal: 4,
+    },
+    metaRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    metaIcon: {
+        marginRight: 6,
+    },
+    metaText: {
+        fontSize: 12,
+        color: '#677482',
+    },
+    disclaimerTextBlock: {
+        fontSize: 12,
+        color: '#7C8B9A',
+        lineHeight: 18,
+    },
+    actionFooter: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#FFFFFF',
+        paddingTop: 12,
+        paddingBottom: 36, // Safe area buffer allocation for device home bars
+        paddingHorizontal: 24,
+        borderTopWidth: 1,
+        borderTopColor: '#ECF0F3',
+    },
+    scanButton: {
+        backgroundColor: '#005F59',
+        borderRadius: 14,
+        paddingVertical: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    scanButtonIcon: {
+        marginRight: 8,
+    },
+    scanButtonText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#FFFFFF',
     },
 });

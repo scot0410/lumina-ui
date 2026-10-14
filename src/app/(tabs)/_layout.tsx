@@ -1,7 +1,8 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
-import { Home, ShieldCheck, Scan } from 'lucide-react-native';
+import { Home, ShieldCheck, Scan, ScanLine } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets(); 
@@ -53,7 +54,7 @@ export default function TabLayout() {
             title: 'Scan',
             tabBarIcon: ({ color, focused }) => (
               <View style={[styles.iconWrapper, focused && styles.activePillBackground]}>
-                <Scan color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
+                <ScanLine color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
               </View>
             ),
           }}
@@ -63,6 +64,26 @@ export default function TabLayout() {
           name="alerts"
           options={{
             title: 'Alerts',
+            tabBarIcon: ({ color, focused }) => (
+              <View style={[styles.iconWrapper, focused && styles.activePillBackground]}>
+                {/* <ShieldCheck color={color} size={22} strokeWidth={focused ? 2.5 : 2} /> */}
+              
+              <Ionicons
+                name={focused ? "shield-checkmark-sharp" : "shield-checkmark-outline"}
+                size={22}
+                // color={isCompleted ? "#005F59" : "#9CA3AF"} // Primary green if done, gray if pending
+                color={"#005F59"} // Primary green if done, gray if pending
+                // style={styles.listIcon}
+            />
+              </View>
+            ),
+          }}
+        />
+
+         <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
             tabBarIcon: ({ color, focused }) => (
               <View style={[styles.iconWrapper, focused && styles.activePillBackground]}>
                 <ShieldCheck color={color} size={22} strokeWidth={focused ? 2.5 : 2} />

@@ -1,5 +1,3 @@
-import OutBreaksScreen from '@/components/outbreaks';
-import { AlertItem } from '@/components/safety_alert_card';
 import React, { useMemo, useState } from 'react';
 import {
     StyleSheet,
@@ -11,6 +9,7 @@ import {
 import { TabView, Route, SceneMap } from 'react-native-tab-view';
 import { Activity, ChevronDown, Package, SlidersHorizontal, Map, MapPin, Bell } from 'lucide-react-native';
 import { AlertListContainer } from '@/components/alert_list_container';
+import { AlertItem } from '@/types';
 
 const MOCK_RECALLS: AlertItem[] = [
     {

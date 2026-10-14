@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Flashlight, Image, RotateCw, Scan, Search } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
+    Animated,
+    Dimensions,
+    StatusBar,
     StyleSheet,
     Text,
-    View,
     TouchableOpacity,
-    StatusBar,
-    Dimensions,
-    ActivityIndicator
+    View
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Flashlight, Scan, Search, RotateCw, Image, ShieldCheck, Bookmark } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -17,6 +18,25 @@ export default function ScanProductScreen() {
     const [permission, requestPermission] = useCameraPermissions();
     const [facing, setFacing] = useState<'back' | 'front'>('back');
     const [enableTorch, setEnableTorch] = useState<boolean>(false);
+
+    // 🛠️ TOAST CONTROLLER STATE
+    const [showInstructions, setShowInstructions] = useState(true);
+    const fadeAnim = React.useRef(new Animated.Value(1)).current;
+
+    // Trigger toast countdown on component mount
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            Animated.timing(fadeAnim, {
+                toValue: 0,
+                duration: 400, // Smooth fade duration
+                useNativeDriver: true,
+            }).start(() => {
+                setShowInstructions(false);
+            });
+        }, 3000); // 👈 Disappears completely after 3 seconds
+
+        return () => clearTimeout(timer);
+    }, []);
 
     // Handle Loading Permissions
     if (!permission) {
@@ -72,10 +92,13 @@ export default function ScanProductScreen() {
 
                     {/* Top Row: Info Banner & Flash Toggle */}
                     <View style={styles.cameraTopRow} pointerEvents="box-none">
-                        <View style={styles.instructionBanner}>
-                            <Text style={styles.bannerTitle}>Frame the product label</Text>
-                            <Text style={styles.bannerSubtitle}>Keep the name and ingredients readable.</Text>
-                        </View>
+                        {/* 🛠️ TOAST OVERLAY LAYER */}
+                        {showInstructions && (
+                            <Animated.View style={[styles.instructionBanner, { opacity: fadeAnim }]}>
+                                <Text style={styles.bannerTitle}>Frame the product label</Text>
+                                <Text style={styles.bannerSubtitle}>Keep the text readable.</Text>
+                            </Animated.View>
+                        )}
                         <TouchableOpacity
                             style={[styles.iconCircleButton, enableTorch && styles.activeFlashButton]}
                             onPress={toggleTorch}
@@ -94,12 +117,14 @@ export default function ScanProductScreen() {
 
                     {/* Bottom Row: Camera Utilities */}
                     <View style={styles.cameraBottomRow} pointerEvents="box-none">
-                        <TouchableOpacity style={styles.capsuleButton} activeOpacity={0.7}>
-                            <Search color="#FFFFFF" size={16} />
-                            <Text style={styles.capsuleText}>Tap to focus</Text>
-                        </TouchableOpacity>
+                        {showInstructions && (
+                            <Animated.View style={[styles.capsuleButton, { opacity: fadeAnim }]}>
+                                <Search color="#FFFFFF" size={16} />
+                                <Text style={styles.capsuleText}>Tap to focus</Text>
+                            </Animated.View>
+                        )}
 
-                        <TouchableOpacity style={[styles.iconCircleButton, { width: 44, height: 44 }]}>
+                        <TouchableOpacity style={[styles.iconCircleButton, { width: 40, height: 40 }]}>
                             <Text style={styles.zoomText}>1x</Text>
                         </TouchableOpacity>
                     </View>
@@ -108,9 +133,9 @@ export default function ScanProductScreen() {
 
             {/* 3. HEALTH & GUIDANCE WARNING BOX */}
             <View style={styles.guidanceBanner}>
-                <Text style={styles.guidanceTitle}>Pregnancy guidance + separate recall check</Text>
+                <Text style={styles.guidanceTitle}>Pregnancy Guidance & Recall Check</Text>
                 <Text style={styles.guidanceText}>
-                    Ingredient & preparation guidance, then recall information. A photo can't confirm safety.
+                    Always verify labels independently. A photo cannot confirm absolute safety.
                 </Text>
             </View>
 
@@ -170,14 +195,13 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 15,
     },
-    // Header Elements
     header: {
         paddingHorizontal: 24,
         paddingTop: 20,
         paddingBottom: 16,
     },
     headerTitle: {
-    fontSize: 27,
+        fontSize: 27,
         fontWeight: '700',
         color: '#182C32',
         fontFamily: 'Inter-Bold',
@@ -188,7 +212,6 @@ const styles = StyleSheet.create({
         marginTop: 4,
         fontWeight: '300'
     },
-    // Viewfinder Bounds
     viewfinderContainer: {
         flex: 1,
         marginHorizontal: 16,
@@ -204,9 +227,19 @@ const styles = StyleSheet.create({
     },
     cameraTopRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         alignItems: 'flex-start',
-        marginTop: 4,
+        // marginTop: 4,
+        // borderColor: '#FFF',
+        // borderWidth: 1
+    },
+    cameraBottomRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        // marginBottom: 2,
+        // borderColor: '#FFF',
+        // borderWidth: 1
     },
     instructionBanner: {
         backgroundColor: 'rgba(26, 37, 48, 0.85)',
@@ -218,7 +251,7 @@ const styles = StyleSheet.create({
     bannerTitle: {
         color: '#FFFFFF',
         fontWeight: '700',
-        fontSize: 15,
+        fontSize: 12,
         marginBottom: 3,
     },
     bannerSubtitle: {
@@ -227,20 +260,14 @@ const styles = StyleSheet.create({
     },
     iconCircleButton: {
         backgroundColor: 'rgba(26, 37, 48, 0.85)',
-        width: 46,
-        height: 46,
+        width: 40,
+        height: 40,
         borderRadius: 23,
         justifyContent: 'center',
         alignItems: 'center',
     },
     activeFlashButton: {
         backgroundColor: '#FFFFFF',
-    },
-    cameraBottomRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 4,
     },
     capsuleButton: {
         flexDirection: 'row',
@@ -252,7 +279,7 @@ const styles = StyleSheet.create({
     },
     capsuleText: {
         color: '#FFFFFF',
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '600',
         marginLeft: 8,
     },
@@ -261,13 +288,12 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '700',
     },
-    // Targeting Overlay System
     frameOverlay: {
         position: 'absolute',
-        top: '15%',
-        left: '10%',
-        right: '10%',
-        height: '65%',
+        top: '20%',
+        left: '15%',
+        right: '15%',
+        height: '71%',
         borderWidth: 0,
     },
     corner: {
@@ -313,13 +339,13 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
     guidanceTitle: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '700',
         color: '#005F59',
         marginBottom: 4,
     },
     guidanceText: {
-        fontSize: 13,
+        fontSize: 12,
         color: '#2A3C3A',
         lineHeight: 18,
     },

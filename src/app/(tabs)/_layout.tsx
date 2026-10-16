@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
-import { Home, ShieldCheck, Scan, ScanLine } from 'lucide-react-native';
+import { Home, ShieldCheck, Scan, ScanLine, UserRound } from 'lucide-react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
@@ -86,7 +86,7 @@ export default function TabLayout() {
             title: 'Profile',
             tabBarIcon: ({ color, focused }) => (
               <View style={[styles.iconWrapper, focused && styles.activePillBackground]}>
-                <ShieldCheck color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
+                <UserRound color={color} size={22} strokeWidth={focused ? 2.5 : 2} />
               </View>
             ),
           }}

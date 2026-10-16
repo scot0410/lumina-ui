@@ -192,7 +192,9 @@ export default function ScanProductScreen() {
                     <View style={styles.cameraTopRow} pointerEvents="box-none">
                         {/* 🛠️ TOAST OVERLAY LAYER */}
                         {showInstructions && (
-                            <Animated.View style={[styles.instructionBanner, { opacity: fadeAnim }]}>
+                            <Animated.View style={[
+                                styles.instructionBanner, 
+                                { opacity: fadeAnim }]}>
                                 <Text style={styles.bannerTitle}>Frame the product label</Text>
                                 <Text style={styles.bannerSubtitle}>Keep the text readable.</Text>
                             </Animated.View>

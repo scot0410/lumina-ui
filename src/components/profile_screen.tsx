@@ -102,7 +102,7 @@ export default function ProfileScreen() {
               <View style={styles.avatarCircle}><Text style={styles.avatarInitial}>J</Text></View>
               <View style={styles.accountTextContainer}>
                 <Text style={styles.accountName}>Hi, {trackingData.name}</Text>
-                <Text style={styles.accountSubtext}>Demo account · sample tracking data</Text>
+                {/* <Text style={styles.accountSubtext}>Demo account · sample tracking data</Text> */}
               </View>
               <Ionicons name="options-outline" size={20} color="#677482" />
             </View>
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   accountName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#182C32',
+    color: '#1e1f1f',
   },
   accountSubtext: {
     fontSize: 12,
